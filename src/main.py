@@ -1,8 +1,8 @@
 from textnode import TextNode, TextType
-from md_converter import extract_markdown_links
+from md_converter import text_to_textnodes
 
 def main():
-    Node = extract_markdown_links("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)")
+    Node = text_to_textnodes("This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)")
     print(Node)
 
 main()
