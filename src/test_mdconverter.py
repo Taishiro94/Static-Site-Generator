@@ -7,7 +7,9 @@ from md_converter import (  split_nodes_delimiter,
                             split_nodes_image,
                             split_nodes_link,
                             text_to_textnodes,
-                            markdown_to_blocks
+                            markdown_to_blocks,
+                            block_to_block_type,
+                            BlockType
 )
 
 class TestMDConverterNode(unittest.TestCase):
@@ -245,6 +247,59 @@ This is the same paragraph on a new line
             ],
         )
     
+    def test_mdBlockType(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        types = []
+        for block in blocks:
+            types.append(block_to_block_type(block))
+        self.assertEqual(
+            types,
+            [
+                BlockType.PARAGRAPH,
+                BlockType.PARAGRAPH,
+                BlockType.UNORDERED_LIST,
+            ],
+        )
+
+    def test_mdBlockType2(self):
+        md = """
+### This is a heading 3 paragraph
+
+```
+This is a Code paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+```
+
+> "This is a list"
+> "with items"
+
+1. This is
+2. a ordered
+3. List
+"""
+        blocks = markdown_to_blocks(md)
+        types = []
+        for block in blocks:
+            types.append(block_to_block_type(block))
+        self.assertEqual(
+            types,
+            [
+                BlockType.HEADING,
+                BlockType.CODE,
+                BlockType.QUOTE,
+                BlockType.ORDERED_LIST
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
