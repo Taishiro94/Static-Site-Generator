@@ -1,17 +1,21 @@
 import os
 import shutil
+import sys
 
 from copystatic import copy_files_recursive
 from md_converter import extract_title, markdown_to_html_node
 
 
 dir_path_static = "./static"
-dir_path_public = "public"
+dir_path_public = "docs"
 dir_path_content = "content"
 template_path = "template.html"
 
-
 def main():
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    else:
+        basepath = "/"
     print("Deleting public directory...")
     if os.path.exists(dir_path_public):
         shutil.rmtree(dir_path_public)
@@ -19,33 +23,33 @@ def main():
     print("Copying static files to public directory...")
     copy_files_recursive(dir_path_static, dir_path_public)
    
-    generate_pages_recursive(dir_path_content, template_path, dir_path_public)
+    generate_pages_recursive(dir_path_content, template_path, dir_path_public, basepath)
 
 def get_filecontent(from_path):
     with open(from_path, "r") as f:
         file = f.read()
     return file
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     markdown = get_filecontent(from_path)
     template = get_filecontent(template_path)
     title = extract_title(markdown)
     markhtml = markdown_to_html_node(markdown).to_html()
-    template = template.replace("{{ Title }}", title).replace("{{ Content }}", markhtml)
+    template = template.replace("{{ Title }}", title).replace("{{ Content }}", markhtml).replace('href="/', f'href="{basepath}').replace('src="/', f'src="{basepath}')
     with open(dest_path, "w") as f:
         f.write(template)
     return
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     inhalt = os.listdir(dir_path_content)
     if not os.path.exists(dest_dir_path):
         os.makedirs(dest_dir_path)
     for item in inhalt: 
         if os.path.isfile(dir_path_content + "/" + item):
-            generate_page(dir_path_content + "/" + item, template_path, dest_dir_path + "/" + item.replace(".md", ".html"))
+            generate_page(dir_path_content + "/" + item, template_path, dest_dir_path + "/" + item.replace(".md", ".html"), basepath)
         else:
-            generate_pages_recursive(dir_path_content +  "/" + item, template_path, dest_dir_path + "/" + item)
+            generate_pages_recursive(dir_path_content +  "/" + item, template_path, dest_dir_path + "/" + item, basepath)
     return 
 
     
